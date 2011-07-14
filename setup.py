@@ -18,6 +18,7 @@ if __name__ == '__main__':
         author_email='felix.schwarz@oss.schwarz.eu',
         license='MIT',
         install_requires=['Trac >= 0.11'],
+        tests_require=['TracDevPlatformPlugin'],
         
         zip_safe=False,
         packages=setuptools.find_packages(exclude=['tests']),

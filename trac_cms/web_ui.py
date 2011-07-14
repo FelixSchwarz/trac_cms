@@ -83,10 +83,15 @@ class TracCMSModule(Component):
     # --------------------------------------------------------------------------
     
     def _matches_template(self, req):
-        return os.path.exists(self._content_filename(req))
+        content_filename = self._content_filename(req)
+        if content_filename is None:
+            return False
+        return os.path.exists(content_filename)
     
     def _matches_static_file(self, req):
         static_filename = self._static_filename(req)
+        if static_filename is None:
+            return False
         return os.path.exists(static_filename) and os.path.isfile(static_filename)
     
     def _static_filename(self, req):
@@ -96,10 +101,15 @@ class TracCMSModule(Component):
         return self._filename_from_req(req, 'cms', 'content')
     
     def _filename_from_req(self, req, *dir_names):
-        # FIXME: guard against directory traversal ('/../')
         # strip leading '/' from request
         request_path = req.path_info[1:]
-        return os.path.join(self.env.path, *(list(dir_names) + [request_path]))
+        base_path = os.path.join(self.env.path, *dir_names)
+        filename = os.path.normpath(os.path.join(base_path, request_path))
+        
+        # path traversal protection
+        if not filename.startswith(base_path):
+            return None
+        return filename
     
     def _markup_stream(self, template_filename, **kwargs):
         from genshi.template import TemplateLoader
