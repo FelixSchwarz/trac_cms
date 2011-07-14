@@ -8,7 +8,7 @@ import setuptools
 
 
 if __name__ == '__main__':
-    version='0.1'
+    version='0.1.1'
     setuptools.setup(
         name='TracCMS',
         version=version,

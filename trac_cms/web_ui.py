@@ -27,7 +27,7 @@ import re
 
 try:
     import json
-except ImportError
+except ImportError:
     import simplejson as json
 
 from genshi.filters.transform import Transformer
