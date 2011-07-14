@@ -23,8 +23,18 @@
 # THE SOFTWARE.
 
 import os
+import re
 
+try:
+    import json
+except ImportError
+    import simplejson as json
+
+from genshi.filters.transform import Transformer
+from genshi.output import DocType
+from genshi.template import TemplateLoader
 from trac.core import Component, implements
+from trac.resource import Resource
 from trac.web import IRequestHandler
 
 
@@ -46,8 +56,6 @@ def wiki_to_html(env, context, wikitext):
     return HtmlFormatter(env, context, wikitext).generate()
 # ------------------------------------------------------------------------------
 
-from genshi.output import DocType
-from genshi.template import TemplateLoader
 
 class TracCMSModule(Component):
     implements(IRequestHandler)
@@ -65,15 +73,12 @@ class TracCMSModule(Component):
             content_filename = os.path.join(content_filename, 'index.html')
         content = open(content_filename).read().decode('UTF-8')
 
-        from trac.resource import Resource
         context = context_for_resource(req, Resource('cms', req.path_info))
         html = wiki_to_html(self.env, context, content)
 
         metadata = {}
-        import re
         match = re.search('{{{\s*#!comment\s*metadata=(.*?)\s*}}}', content, re.DOTALL)
         if match:
-            import json
             metadata = json.loads(match.group(1))
         
         layout_template = metadata.get('template', 'layout.html')
@@ -112,7 +117,6 @@ class TracCMSModule(Component):
         return filename
     
     def _markup_stream(self, template_filename, **kwargs):
-        from genshi.template import TemplateLoader
         loader = TemplateLoader([os.path.join(self.env.path, 'cms', 'templates')], variable_lookup='lenient')
         template = loader.load(template_filename)
         return template.generate(**kwargs)
@@ -123,7 +127,6 @@ class TracCMSModule(Component):
             switcher_stream = self._markup_stream('language_switcher.html', **kwargs)
             available_languages = kwargs['metadata'].get('lang')
             
-            from genshi.filters.transform import Transformer
             transformer = Transformer('//div[@id="main"]')
             stream = stream | transformer.prepend(switcher_stream)
         
